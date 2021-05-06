@@ -8,7 +8,7 @@ using ReadStat_jll
 ##
 ##############################################################################
 
-using DataValues: DataValueVector
+using DataValues:DataValueVector
 import DataValues
 using Dates
 
@@ -63,7 +63,7 @@ mutable struct ReadStatDataFrame
     measures::Vector{Cint}
     alignments::Vector{Cint}
     val_label_keys::Vector{String}
-    val_label_dict::Dict{String, Dict{Any,String}}
+    val_label_dict::Dict{String,Dict{Any,String}}
     rows::Int
     columns::Int
     filelabel::String
@@ -74,7 +74,7 @@ mutable struct ReadStatDataFrame
 
     ReadStatDataFrame() =
         new(Any[], Symbol[], DataType[], String[], String[], Csize_t[], Cint[], Cint[],
-        String[], Dict{String, Dict{Any,String}}(), 0, 0, "", Dates.unix2datetime(0), 0, Cint[], Bool[])
+        String[], Dict{String,Dict{Any,String}}(), 0, 0, "", Dates.unix2datetime(0), 0, Cint[], Bool[])
 end
 
 include("C_interface.jl")
@@ -144,7 +144,7 @@ function handle_variable!(var_index::Cint, variable::Ptr{Nothing},
     ds = unsafe_pointer_to_objref(ds_ptr)::ReadStatDataFrame
     missing_count = readstat_variable_get_missing_ranges_count(variable)
 
-    push!(ds.val_label_keys, (val_label == C_NULL ? "" : unsafe_string(val_label)))
+push!(ds.val_label_keys, (val_label == C_NULL ? "" : unsafe_string(val_label)))
     push!(ds.headers, get_name(variable))
     push!(ds.labels, get_label(variable))
     push!(ds.formats, get_format(variable))
@@ -209,7 +209,7 @@ function handle_value!(obs_index::Cint, variable::Ptr{Nothing},
 
     return Cint(0)
 end
-
+    
 function readfield!(dest::DataValueVector{String}, row, val::ReadStatValue)
     ptr = ccall((:readstat_string_value, libreadstat), Cstring, (ReadStatValue,), val)
 
@@ -237,7 +237,7 @@ for (j_type, rs_name) in (
             @inbounds DataValues.unsafe_setindex_value!(dest, _val, row)
         elseif row == length(dest) + 1
             DataValues.push!(dest, _val)
-        else
+    else
             throw(ArgumentError("illegal row index: $row"))
         end
     end
@@ -289,4 +289,4 @@ read_por(filename::AbstractString) = read_data_file(filename, Val(:por))
 read_sas7bdat(filename::AbstractString) = read_data_file(filename, Val(:sas7bdat))
 read_xport(filename::AbstractString) = read_data_file(filename, Val(:xport))
 
-end #module ReadStat
+end # module ReadStat
